@@ -43,6 +43,7 @@
 #endif
 
 using boost::format;
+using boost::locale::to_lower;
 using boost::locale::translate;
 using std::exception;
 using std::locale;
@@ -232,7 +233,7 @@ void LootState::changeGame(const std::string& newGameFolder) {
       find_if(installedGames_.begin(),
               installedGames_.end(),
               [&](const gui::Game& game) {
-                return boost::iequals(newGameFolder, game.FolderName());
+                return to_lower(newGameFolder) == to_lower(game.FolderName());
               });
   currentGame_->Init();
   if (logger_) {
@@ -376,8 +377,8 @@ void LootState::updateStoredGamePathSetting(const gui::Game& game) {
   auto pos = find_if(begin(gameSettings),
                      end(gameSettings),
                      [&](const GameSettings& gameSettings) {
-                       return boost::iequals(game.FolderName(),
-                                             gameSettings.FolderName());
+                       return to_lower(game.FolderName()) ==
+                         to_lower(gameSettings.FolderName());
                      });
   if (pos == end(gameSettings) && logger_) {
     logger_->error("Could not find the settings for the current game ({})",
