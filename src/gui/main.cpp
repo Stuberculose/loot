@@ -45,8 +45,8 @@ CefSettings GetCefSettings() {
 
   // Load locale pack files from LOOT's l10n path.
   CefString(&cef_settings.locales_dir_path)
-      .FromString(loot::LootPaths::getL10nPath().string());
-      
+      .FromString(loot::LootPaths::getL10nPath().u8string());
+
   return cef_settings;
 }
 
