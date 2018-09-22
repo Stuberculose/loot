@@ -56,13 +56,13 @@ private:
                        const std::string& pluginName,
                        Counters& counters) {
     auto plugin = state_.getCurrentGame().GetPlugin(pluginName);
-    if (!plugin) {
+    if (!plugin.has_value() || !plugin.value()) {
       return;
     }
 
     auto isActive = state_.getCurrentGame().IsPluginActive(pluginName);
 
-    if (isActive && plugin->IsLightMaster()) {
+    if (isActive && plugin.value()->IsLightMaster()) {
       stream << "254 FE " << std::setw(3) << std::hex
         << counters.activeLightMasters << std::dec << " ";
       counters.activeLightMasters += 1;

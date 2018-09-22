@@ -46,12 +46,12 @@ public:
     std::vector<std::string> loadOrder = state_.getCurrentGame().GetLoadOrder();
     for (const auto& pluginName : loadOrder) {
       auto plugin = state_.getCurrentGame().GetPlugin(pluginName);
-      if (!plugin) {
+      if (!plugin.has_value() || !plugin.value()) {
         continue;
       }
 
       auto loadOrderIndex = state_.getCurrentGame().GetActiveLoadOrderIndex(
-          plugin, loadOrder);
+          plugin.value(), loadOrder);
 
       nlohmann::json pluginJson = { {"name", pluginName} };
       if (loadOrderIndex.has_value()) {

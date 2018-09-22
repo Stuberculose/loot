@@ -60,7 +60,7 @@ private:
     };
 
     auto plugin = game_.GetPlugin(pluginName_);
-    if (!plugin) {
+    if (!plugin.has_value() || !plugin.value()) {
       throw std::runtime_error("The plugin \"" + pluginName_ +
                                "\" is not loaded.");
     }
@@ -68,7 +68,7 @@ private:
     for (const auto& otherPlugin : game_.GetPlugins()) {
       json["plugins"].push_back({
         { "metadata", generateDerivedMetadata(otherPlugin) },
-        { "conflicts", doPluginsConflict(plugin, otherPlugin) },
+        { "conflicts", doPluginsConflict(plugin.value(), otherPlugin) },
       });
     }
 

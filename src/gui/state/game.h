@@ -54,7 +54,7 @@ public:
   static Message ToMessage(const PluginCleaningData& cleaningData);
   void Init();
 
-  std::shared_ptr<const PluginInterface> GetPlugin(
+  std::optional<std::shared_ptr<const PluginInterface>> GetPlugin(
       const std::string& name) const;
   std::set<std::shared_ptr<const PluginInterface>> GetPlugins() const;
   std::vector<Message> CheckInstallValidity(
@@ -97,9 +97,9 @@ public:
   std::unordered_set<Group> GetMasterlistGroups() const;
   std::unordered_set<Group> GetUserGroups() const;
 
-  PluginMetadata GetMasterlistMetadata(const std::string& pluginName,
+  std::optional<PluginMetadata> GetMasterlistMetadata(const std::string& pluginName,
                                        bool evaluateConditions = false) const;
-  PluginMetadata GetUserMetadata(const std::string& pluginName,
+  std::optional<PluginMetadata> GetUserMetadata(const std::string& pluginName,
                                  bool evaluateConditions = false) const;
 
   void SetUserGroups(const std::unordered_set<Group>& groups);

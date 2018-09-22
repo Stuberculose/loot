@@ -93,12 +93,12 @@ private:
 
     for (const auto& pluginName : plugins) {
       auto plugin = state_.getCurrentGame().GetPlugin(pluginName);
-      if (!plugin) {
+      if (!plugin.has_value() || !plugin.value()) {
         continue;
       }
 
-      auto derivedMetadata = generateDerivedMetadata(plugin);
-      auto index = state_.getCurrentGame().GetActiveLoadOrderIndex(plugin, plugins);
+      auto derivedMetadata = generateDerivedMetadata(plugin.value());
+      auto index = state_.getCurrentGame().GetActiveLoadOrderIndex(plugin.value(), plugins);
       if (index.has_value()) {
         derivedMetadata.setLoadOrderIndex(index.value());
       }

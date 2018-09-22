@@ -351,7 +351,7 @@ TEST_P(GameTest, checkInstallValidityShouldCheckThatRequirementsArePresent) {
       File(blankEsp),
   });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
                 Message(MessageType::error,
                         "This plugin requires \"" + missingEsp +
@@ -375,7 +375,7 @@ TEST_P(GameTest, checkInstallValidityShouldHandleNonAsciiFileMetadataCorrectly) 
     File(u8"nonAsc\u00EDi.esp"),
   });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_TRUE(messages.empty());
 }
 
@@ -391,7 +391,7 @@ TEST_P(
     File(blankEsp),
     });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
     Message(MessageType::error,
     "This plugin requires \"foo\" to be installed, but it is missing."),
@@ -410,7 +410,7 @@ TEST_P(GameTest,
       File(masterFile),
   });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
                 Message(MessageType::error,
                         "This plugin is incompatible with \"" + masterFile +
@@ -433,7 +433,7 @@ TEST_P(GameTest,
       File(incompatibleFilename),
     });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
                 Message(MessageType::error,
                         "This plugin is incompatible with \"" + incompatibleFilename +
@@ -453,7 +453,7 @@ TEST_P(GameTest,
     File(masterFile, "foo"),
     });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
     Message(MessageType::error,
     "This plugin is incompatible with \"foo\", but both files are present."),
@@ -475,7 +475,7 @@ TEST_P(GameTest, checkInstallValidityShouldGenerateMessagesFromDirtyInfo) {
       PluginCleaningData(0xDEADBEEF, "utility2", info, 0, 5, 10),
   });
 
-  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm), metadata);
+  auto messages = game.CheckInstallValidity(game.GetPlugin(blankEsm).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
                 Game::ToMessage(
                     PluginCleaningData(blankEsmCrc, "utility1", info, 0, 1, 2)),
@@ -494,7 +494,7 @@ TEST_P(
   PluginMetadata metadata(blankDifferentMasterDependentEsp);
 
   auto messages = game.CheckInstallValidity(
-      game.GetPlugin(blankDifferentMasterDependentEsp), metadata);
+      game.GetPlugin(blankDifferentMasterDependentEsp).value(), metadata);
   EXPECT_EQ(std::vector<Message>({
                 Message(MessageType::error,
                         "This plugin requires \"" + blankDifferentEsm +
@@ -513,7 +513,7 @@ TEST_P(
   metadata.SetTags({Tag("Filter")});
 
   auto messages = game.CheckInstallValidity(
-      game.GetPlugin(blankDifferentMasterDependentEsp), metadata);
+      game.GetPlugin(blankDifferentMasterDependentEsp).value(), metadata);
   EXPECT_TRUE(messages.empty());
 }
 
@@ -570,11 +570,11 @@ TEST_P(
 
   // Check that one plugin's header has been read.
   ASSERT_NO_THROW(game.GetPlugin(masterFile));
-  auto plugin = game.GetPlugin(masterFile);
-  EXPECT_EQ("5.0", plugin->GetVersion());
+  auto plugin = game.GetPlugin(masterFile).value();
+  EXPECT_EQ("5.0", plugin->GetVersion().value());
 
   // Check that only the header has been read.
-  EXPECT_EQ(0, plugin->GetCRC());
+  EXPECT_FALSE(plugin->GetCRC().has_value());
 }
 
 TEST_P(
@@ -588,11 +588,11 @@ TEST_P(
 
   // Check that one plugin's header has been read.
   ASSERT_NO_THROW(game.GetPlugin(blankEsm));
-  auto plugin = game.GetPlugin(blankEsm);
-  EXPECT_EQ("5.0", plugin->GetVersion());
+  auto plugin = game.GetPlugin(blankEsm).value();
+  EXPECT_EQ("5.0", plugin->GetVersion().value());
 
   // Check that not only the header has been read.
-  EXPECT_EQ(blankEsmCrc, plugin->GetCRC());
+  EXPECT_EQ(blankEsmCrc, plugin->GetCRC().value());
 }
 
 TEST_P(GameTest,
@@ -635,7 +635,7 @@ TEST_P(
   game.Init();
   game.LoadAllInstalledPlugins(true);
 
-  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(blankEsp),
+  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(blankEsp).value(),
                                              game.GetLoadOrder());
   EXPECT_FALSE(index.has_value());
 }
@@ -647,16 +647,16 @@ TEST_P(
   game.Init();
   game.LoadAllInstalledPlugins(true);
 
-  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(masterFile),
+  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(masterFile).value(),
                                              game.GetLoadOrder());
   EXPECT_EQ(0, index.value());
 
-  index = game.GetActiveLoadOrderIndex(game.GetPlugin(blankEsm),
+  index = game.GetActiveLoadOrderIndex(game.GetPlugin(blankEsm).value(),
                                        game.GetLoadOrder());
   EXPECT_EQ(1, index.value());
 
   index = game.GetActiveLoadOrderIndex(
-      game.GetPlugin(blankDifferentMasterDependentEsp), game.GetLoadOrder());
+      game.GetPlugin(blankDifferentMasterDependentEsp).value(), game.GetLoadOrder());
   EXPECT_EQ(2, index.value());
 }
 
@@ -667,7 +667,7 @@ TEST_P(
   game.Init();
   game.LoadAllInstalledPlugins(true);
 
-  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(nonAsciiEsp),
+  auto index = game.GetActiveLoadOrderIndex(game.GetPlugin(nonAsciiEsp).value(),
     { u8"non\u00E1scii.esp" });
   EXPECT_EQ(0, index.value());
 }

@@ -58,8 +58,8 @@ public:
     std::vector<std::string> loadOrder = state_.getCurrentGame().GetLoadOrder();
     for (const auto& pluginName : loadOrder) {
       const auto plugin = state_.getCurrentGame().GetPlugin(pluginName);
-      if (plugin) {
-        installed.push_back(plugin);
+      if (plugin.has_value() && plugin.value()) {
+        installed.push_back(plugin.value());
       }
     }
 
